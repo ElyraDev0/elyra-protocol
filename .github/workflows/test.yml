@@ -1,0 +1,25 @@
+name: tests
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+# placeholders so foundry.toml can be read in CI (tests never use the network)
+env:
+  SEPOLIA_RPC_URL: https://ethereum-sepolia-rpc.publicnode.com
+  ETHERSCAN_API_KEY: not-needed-for-tests
+
+jobs:
+  forge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: stable
+      - name: Install dependencies
+        run: forge install --no-git foundry-rs/forge-std@v1.9.4 OpenZeppelin/openzeppelin-contracts@v5.1.0
+      - name: Build
+        run: forge build
+      - name: Test
+        run: forge test -vv
