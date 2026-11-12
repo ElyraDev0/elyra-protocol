@@ -62,7 +62,8 @@ contract CreditMeter is EIP712, ReentrancyGuard {
         if (guard.paused()) revert Paused();
         if (!registry.isActive(agentId) || amount == 0) revert BadInput();
         Channel storage c = channels[key(msg.sender, agentId, token)];
-        uint256 cap = guard.jobCap(token), wcap = guard.walletCap(token);
+        uint256 cap = guard.jobCap(token);
+        uint256 wcap = guard.walletCap(token);
         if (cap == 0 || c.deposit - c.settled + amount > cap) revert CapExceeded();
         if (wcap != 0 && exposureOf[token][msg.sender] + amount > wcap) revert CapExceeded();
         uint256 before = IERC20(token).balanceOf(address(this));

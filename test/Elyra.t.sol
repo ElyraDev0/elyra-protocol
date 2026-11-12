@@ -46,7 +46,7 @@ contract ElyraTest is Test {
 
     function _open(uint256 amount) internal returns (uint256 id) {
         vm.prank(client);
-        id = esc.openJob(agentId, address(usdc), amount, uint64(block.timestamp + 1 days), keccak256("spec"));
+        id = esc.openJob(agentId, address(usdc), amount, uint64(vm.getBlockTimestamp() + 1 days), keccak256("spec"));
     }
 
     // ---------------- registry ----------------
@@ -84,7 +84,7 @@ contract ElyraTest is Test {
         vm.prank(agentOwner); esc.deliver(id, keccak256("r"));
         vm.expectRevert(JobEscrow.TooEarly.selector);
         esc.release(id);
-        vm.warp(block.timestamp + 1 hours + 1);
+        vm.warp(vm.getBlockTimestamp() + 1 hours + 1);
         esc.release(id);
         assertEq(usdc.balanceOf(agentOwner), 49.5e6);
     }
@@ -100,35 +100,35 @@ contract ElyraTest is Test {
     function test_refund_after_deadline() public {
         uint256 id = _open(50e6);
         vm.prank(client); vm.expectRevert(JobEscrow.TooEarly.selector); esc.refund(id);
-        vm.warp(block.timestamp + 1 days + 1);
+        vm.warp(vm.getBlockTimestamp() + 1 days + 1);
         vm.prank(client); esc.refund(id);
         assertEq(usdc.balanceOf(client), 1_000e6);
         vm.prank(agentOwner); vm.expectRevert(JobEscrow.WrongStatus.selector); esc.deliver(id, bytes32(0));
     }
     function test_late_delivery_rejected() public {
         uint256 id = _open(50e6);
-        vm.warp(block.timestamp + 1 days + 1);
+        vm.warp(vm.getBlockTimestamp() + 1 days + 1);
         vm.prank(agentOwner); vm.expectRevert(JobEscrow.TooLate.selector); esc.deliver(id, bytes32(0));
     }
 
     // ---------------- caps & pause ----------------
     function test_job_cap() public {
         vm.prank(client); vm.expectRevert(JobEscrow.CapExceeded.selector);
-        esc.openJob(agentId, address(usdc), 501e6, uint64(block.timestamp + 1 days), 0);
+        esc.openJob(agentId, address(usdc), 501e6, uint64(vm.getBlockTimestamp() + 1 days), 0);
     }
     function test_unknown_token_rejected() public {
         vm.prank(client); vm.expectRevert(JobEscrow.CapExceeded.selector);
-        esc.openJob(agentId, address(ely), 1 ether, uint64(block.timestamp + 1 days), 0);
+        esc.openJob(agentId, address(ely), 1 ether, uint64(vm.getBlockTimestamp() + 1 days), 0);
     }
     function test_pause_blocks_new_jobs_but_not_refunds_or_releases() public {
         uint256 a = _open(50e6);
         uint256 b = _open(50e6);
         guard.setPaused(true);
         vm.prank(client); vm.expectRevert(JobEscrow.Paused.selector);
-        esc.openJob(agentId, address(usdc), 1e6, uint64(block.timestamp + 1 days), 0);
+        esc.openJob(agentId, address(usdc), 1e6, uint64(vm.getBlockTimestamp() + 1 days), 0);
         vm.prank(agentOwner); esc.deliver(a, 0);
         vm.prank(client); esc.release(a);                 // still works
-        vm.warp(block.timestamp + 1 days + 1);
+        vm.warp(vm.getBlockTimestamp() + 1 days + 1);
         vm.prank(client); esc.refund(b);                  // still works
         assertEq(esc.lockedOf(address(usdc)), 0);
     }
@@ -144,7 +144,7 @@ contract ElyraTest is Test {
         assertTrue(bond.isVerified(agentId));
         uint256 id = _open(10e6);
         vm.prank(agentOwner); bond.requestWithdraw(agentId, 1_000 ether);
-        vm.warp(block.timestamp + 1 hours + 1);
+        vm.warp(vm.getBlockTimestamp() + 1 hours + 1);
         vm.prank(agentOwner); vm.expectRevert(AgentBond.OpenJobs.selector); bond.withdraw(agentId);
         vm.prank(agentOwner); esc.deliver(id, 0);
         vm.prank(client); esc.release(id);
@@ -156,7 +156,7 @@ contract ElyraTest is Test {
         vm.prank(agentOwner); bond.deposit(agentId, 500 ether);
         vm.prank(agentOwner); bond.requestWithdraw(agentId, 500 ether);
         guard.setPaused(true);
-        vm.warp(block.timestamp + 1 hours + 1);
+        vm.warp(vm.getBlockTimestamp() + 1 hours + 1);
         vm.prank(agentOwner); bond.withdraw(agentId);
         assertEq(bond.bondOf(agentId), 0);
     }
@@ -183,7 +183,7 @@ contract ElyraTest is Test {
         vm.prank(agentOwner); esc.deliver(id, 0);
         vm.prank(client); esc.dispute(id);
         vm.expectRevert(JobEscrow.TooEarly.selector); esc.resolveTimeout(id);
-        vm.warp(block.timestamp + 30 days + 1);
+        vm.warp(vm.getBlockTimestamp() + 30 days + 1);
         esc.resolveTimeout(id);
         assertEq(usdc.balanceOf(agentOwner), 50e6);
         assertEq(esc.lockedOf(address(usdc)), 0);
@@ -200,7 +200,7 @@ contract ElyraTest is Test {
         vm.prank(g); vm.expectRevert(ElyraGuard.NotOwner.selector); guard.setTokenCaps(address(usdc), 1, 1, 1);
         vm.prank(g); vm.expectRevert(ElyraGuard.NotOwner.selector); guard.setGuardian(g);
         vm.prank(client); vm.expectRevert(JobEscrow.Paused.selector);
-        esc.openJob(agentId, address(usdc), 1e6, uint64(block.timestamp + 1 days), 0);
+        esc.openJob(agentId, address(usdc), 1e6, uint64(vm.getBlockTimestamp() + 1 days), 0);
         guard.setPaused(false);                                                                  // only the owner re-opens
         _open(1e6);
     }
@@ -237,7 +237,7 @@ contract ElyraTest is Test {
         guard.setDisputeDeposit(address(usdc), 1e6);
         uint256 id = _delivered(10e6);
         vm.prank(client); esc.dispute(id);
-        vm.warp(block.timestamp + 30 days + 1);
+        vm.warp(vm.getBlockTimestamp() + 30 days + 1);
         esc.resolveTimeout(id);
         assertEq(usdc.balanceOf(agentOwner), 6e6);                 // half the job + the deposit
         assertEq(usdc.balanceOf(client), 1_000e6 - 11e6 + 5e6);
@@ -265,13 +265,13 @@ contract ElyraTest is Test {
         guard.setDisputeRules(0, 2, 5_000);                        // suspended with >= 2 bad AND > 50% bad
         for (uint256 i = 0; i < 2; i++) {
             uint256 id = _open(1e6);
-            vm.warp(block.timestamp + 1 days + 1);
+            vm.warp(vm.getBlockTimestamp() + 1 days + 1);
             vm.prank(client); esc.refund(id);                      // not delivered = bad outcome
         }
         assertTrue(reg.isSuspended(agentId));
         assertFalse(reg.isActive(agentId));
         vm.prank(client); vm.expectRevert(JobEscrow.BadInput.selector);
-        esc.openJob(agentId, address(usdc), 1e6, uint64(block.timestamp + 1 days), 0);
+        esc.openJob(agentId, address(usdc), 1e6, uint64(vm.getBlockTimestamp() + 1 days), 0);
         vm.prank(client); vm.expectRevert(CreditMeter.BadInput.selector);
         meter.deposit(agentId, address(usdc), 1e6);
         guard.pardon(agentId, 2);                                  // the owner forgives (public, logged)
@@ -282,7 +282,7 @@ contract ElyraTest is Test {
         guard.setDisputeRules(0, 3, 3_000);
         for (uint256 i = 0; i < 5; i++) { uint256 id = _delivered(1e6); vm.prank(client); esc.release(id); }
         uint256 r = _open(1e6);
-        vm.warp(block.timestamp + 1 days + 1);
+        vm.warp(vm.getBlockTimestamp() + 1 days + 1);
         vm.prank(client); esc.refund(r);
         assertFalse(reg.isSuspended(agentId));
     }
@@ -302,18 +302,20 @@ contract ElyraTest is Test {
         vm.prank(agentOwner); vm.expectRevert(CreditMeter.BadInput.selector);
         meter.settle(client, agentId, address(usdc), 5e6, sig);
         // a bigger voucher pays only the difference
-        vm.prank(agentOwner); meter.settle(client, agentId, address(usdc), 8e6, _sign(8e6, 0));
+        bytes memory sig8 = _sign(8e6, 0);
+        vm.prank(agentOwner); meter.settle(client, agentId, address(usdc), 8e6, sig8);
         assertEq(usdc.balanceOf(agentOwner), 4.95e6 + 2.97e6);
         // close: client gets the rest after the notice
         vm.prank(client); meter.requestClose(agentId, address(usdc));
         vm.prank(client); vm.expectRevert(CreditMeter.TooEarly.selector); meter.close(agentId, address(usdc));
-        vm.warp(block.timestamp + 1 hours);
+        vm.warp(vm.getBlockTimestamp() + 1 hours);
         vm.prank(client); meter.close(agentId, address(usdc));
         assertEq(usdc.balanceOf(client), 1_000e6 - 8e6);
         // old vouchers are dead in the next epoch
         vm.prank(client); meter.deposit(agentId, address(usdc), 10e6);
+        bytes memory oldSig = _sign(9e6, 0);
         vm.prank(agentOwner); vm.expectRevert(CreditMeter.BadSignature.selector);
-        meter.settle(client, agentId, address(usdc), 9e6, _sign(9e6, 0));
+        meter.settle(client, agentId, address(usdc), 9e6, oldSig);
     }
     function test_credits_wrong_signer() public {
         vm.prank(client); meter.deposit(agentId, address(usdc), 20e6);
@@ -323,8 +325,9 @@ contract ElyraTest is Test {
     }
     function test_credits_only_agent_owner_settles() public {
         vm.prank(client); meter.deposit(agentId, address(usdc), 20e6);
+        bytes memory sig = _sign(5e6, 0);
         vm.expectRevert(CreditMeter.NotAllowed.selector);
-        meter.settle(client, agentId, address(usdc), 5e6, _sign(5e6, 0));
+        meter.settle(client, agentId, address(usdc), 5e6, sig);
     }
 
     // ---------------- start small: wallet caps ----------------
@@ -332,7 +335,7 @@ contract ElyraTest is Test {
         guard.setTokenCaps(address(usdc), 10e6, 10_000e6, 10e6);
         uint256 a = _open(6e6);
         vm.prank(client); vm.expectRevert(JobEscrow.CapExceeded.selector);
-        esc.openJob(agentId, address(usdc), 5e6, uint64(block.timestamp + 1 days), 0); // 6 + 5 > 10
+        esc.openJob(agentId, address(usdc), 5e6, uint64(vm.getBlockTimestamp() + 1 days), 0); // 6 + 5 > 10
         _open(4e6);                                                                    // 6 + 4 = 10 ok
         vm.prank(agentOwner); esc.deliver(a, 0);
         vm.prank(client); esc.release(a);                                              // frees 6
@@ -342,7 +345,8 @@ contract ElyraTest is Test {
         vm.prank(client); meter.deposit(agentId, address(usdc), 10e6);
         vm.prank(client); vm.expectRevert(CreditMeter.CapExceeded.selector);
         meter.deposit(agentId, address(usdc), 1e6);
-        vm.prank(agentOwner); meter.settle(client, agentId, address(usdc), 3e6, _sign(3e6, 0));
+        bytes memory sig3 = _sign(3e6, 0);
+        vm.prank(agentOwner); meter.settle(client, agentId, address(usdc), 3e6, sig3);
         vm.prank(client); meter.deposit(agentId, address(usdc), 3e6);                  // spent credit frees room
         assertEq(meter.exposureOf(address(usdc), client), 10e6);
     }
@@ -358,7 +362,7 @@ contract ElyraTest is Test {
     // ---------------- faucet ----------------
     function test_faucet_once_a_day() public {
         vm.prank(client); vm.expectRevert(TestToken.Wait.selector); usdc.faucet();
-        vm.warp(block.timestamp + 1 days);
+        vm.warp(vm.getBlockTimestamp() + 1 days);
         vm.prank(client); usdc.faucet();
         assertEq(usdc.balanceOf(client), 2_000e6);
     }
@@ -373,7 +377,7 @@ contract ElyraTest is Test {
         if (p == 0) { vm.prank(agentOwner); esc.concede(id); }
         else if (p == 1) { vm.prank(client); esc.withdrawDispute(id); }
         else if (p == 2) { vm.prank(resolverAddr); esc.resolve(id, 7_000, 0, 0); }
-        else { vm.warp(block.timestamp + 30 days + 1); esc.resolveTimeout(id); }
+        else { vm.warp(vm.getBlockTimestamp() + 30 days + 1); esc.resolveTimeout(id); }
         assertEq(usdc.balanceOf(client) + usdc.balanceOf(agentOwner) + usdc.balanceOf(treasury), 1_000e6);
         assertEq(usdc.balanceOf(address(esc)), 0);
         assertEq(esc.lockedOf(address(usdc)), 0);
