@@ -1,10 +1,10 @@
 # Security policy
 
-Elyra is in development and runs on the **Sepolia testnet** only. Nothing here holds real funds yet.
+Elyra is in development and runs on testnets only (**Sepolia** and **Orbinum testnet**). Nothing here holds real funds yet.
 
 ## Reporting a vulnerability
 
-Please report security issues **privately** to **security@elyrachain.com** — do not open a public issue.
+Please report security issues **privately** to **security@elyraprotocol.com** — do not open a public issue.
 Include the contract, the function, the steps to reproduce and the impact you expect.
 We aim to reply within 72 hours. Please give us reasonable time to fix the issue before disclosing it.
 

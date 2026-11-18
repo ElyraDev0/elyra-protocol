@@ -10,13 +10,16 @@ import {JobEscrow} from "../src/JobEscrow.sol";
 import {CreditMeter} from "../src/CreditMeter.sol";
 import {TestToken} from "../src/TestToken.sol";
 
-/// @notice Deploys the whole Elyra protocol on SEPOLIA with test tokens, wires it and registers one demo agent.
-///         forge script script/Deploy.s.sol --rpc-url sepolia --broadcast --verify
+/// @notice Deploys the whole Elyra protocol on a TESTNET with test tokens, wires it and registers one demo agent.
+///         Sepolia:          forge script script/Deploy.s.sol --rpc-url sepolia --broadcast --verify
+///         Orbinum testnet:  forge script script/Deploy.s.sol --rpc-url orbinum_testnet --broadcast
+///                           (then verify on Sourcify, see docs/ORBINUM.md)
 contract Deploy is Script {
     function run() external {
         uint256 pk = vm.envUint("PRIVATE_KEY");
         address me = vm.addr(pk);
-        require(block.chainid == 11155111, "Sepolia only: this script deploys TEST tokens");
+        // testnets only: this script deploys TEST tokens. Sepolia (11155111) or Orbinum testnet (2700)
+        require(block.chainid == 11155111 || block.chainid == 2700, "Testnet only: Sepolia or Orbinum testnet");
         vm.startBroadcast(pk);
 
         TestToken tEly = new TestToken("Elyra Test ELY", "tELY", 18, 5_000 ether);
@@ -44,14 +47,14 @@ contract Deploy is Script {
         if (guardianWallet != address(0)) guard.setGuardian(guardianWallet);
 
         // one demo agent owned by the deployer, with a bond
-        uint256 demo = registry.register("Elyra Demo - Summarizer", "summarize:en", "1 tUSDC/request", "https://elyrachain.com/agents/demo", bytes32(0), me);
+        uint256 demo = registry.register("Elyra Demo - Summarizer", "summarize:en", "1 tUSDC/request", "https://elyraprotocol.com/agents/demo", bytes32(0), me);
         tEly.faucet();
         tEly.approve(address(bond), 1_000 ether);
         bond.deposit(demo, 1_000 ether);
 
         vm.stopBroadcast();
 
-        console2.log("----- paste into the website: lib/genesis/config.ts -> TESTNET -----");
+        console2.log("----- Elyra deployed on chain", block.chainid, "-----");
         console2.log("agentRegistry:", address(registry));
         console2.log("jobEscrow:    ", address(escrow));
         console2.log("agentBond:    ", address(bond));

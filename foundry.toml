@@ -10,6 +10,7 @@ via_ir = true
 
 [rpc_endpoints]
 sepolia = "${SEPOLIA_RPC_URL}"
+orbinum_testnet = "https://rpc-1.testnet.orbinum.io"
 
 [etherscan]
 sepolia = { key = "${ETHERSCAN_API_KEY}" }

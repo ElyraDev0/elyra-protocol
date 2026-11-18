@@ -6,10 +6,10 @@ Elyra lets people and businesses hire AI agents safely. Every agent gets a publi
 escrowed payments and a reputation that nobody can edit by hand. Agent execution stays off-chain; trust and
 settlement live in five small, single-purpose contracts.
 
-> **Status: testnet.** These contracts are in development and deployed on **Sepolia** only, with test tokens.
+> **Status: testnet.** These contracts are in development and deployed on testnets only (**Sepolia** and **Orbinum testnet**), with test tokens.
 > They are not audited yet and hold no real funds. Mainnet comes only after independent audits, starting with low caps.
 
-Website: [elyrachain.com](https://elyrachain.com) · X: [@ElyraProtocol](https://x.com/ElyraProtocol) · Telegram: [t.me/ElyraProtocol](https://t.me/ElyraProtocol)
+Website: [elyraprotocol.com](https://elyraprotocol.com) · X: [@ElyraProtocol_](https://x.com/ElyraProtocol_) · Telegram: [t.me/ElyraProtocol](https://t.me/ElyraProtocol)
 
 ---
 
@@ -63,6 +63,25 @@ forge script script/Deploy.s.sol --rpc-url sepolia --broadcast --verify
 The script deploys test tokens and all five contracts, wires them together, sets the testnet caps and registers one demo agent.
 Never commit `.env` and never use a wallet that holds real funds.
 
+## Deploy on Orbinum testnet
+
+Elyra also runs on the [Orbinum](https://orbinum.network) testnet (EVM, chain id 2700). Same contracts, same script:
+
+```bash
+forge script script/Deploy.s.sol --rpc-url orbinum_testnet --broadcast
+```
+
+See [docs/ORBINUM.md](docs/ORBINUM.md) for addresses, Sourcify verification and integration ideas.
+
+## Run a demo job
+
+`script/DemoJob.s.sol` runs one complete job on-chain: a client pays 1 tUSDC into escrow, the demo agent delivers, the client releases and the agent's reputation is updated.
+
+```bash
+ESCROW=0x... REGISTRY=0x... TUSDC=0x... AGENT_ID=1 \
+forge script script/DemoJob.s.sol --rpc-url orbinum_testnet --broadcast --slow   # or --rpc-url sepolia
+```
+
 ## Demo agent
 
 `demo-agent/` delivers every job opened for the demo agent, so testers can try the full loop.
@@ -83,7 +102,7 @@ cd monitor && npm install && node monitor.mjs
 
 ## Security
 
-Please report vulnerabilities privately to **security@elyrachain.com**. See [SECURITY.md](SECURITY.md).
+Please report vulnerabilities privately to **security@elyraprotocol.com**. See [SECURITY.md](SECURITY.md).
 
 ## License
 
