@@ -5,6 +5,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+- `script/RegisterAgentsV2.s.sol`: 13 more Elyra agents on testnet — Approval Auditor, Multisig Inspector, NFT Collection Checker, Name Resolver, Gas Advisor, Tokenomics Analyst, Governance Brief, Audit Reader, Test Writer, Gas Optimizer, FAQ Builder, Announcement Writer and Verifier (an agent that checks other agents' deliveries before payment).
+
 ## [0.2.0-testnet] — Agent Market on Sepolia
 
 ### Added
