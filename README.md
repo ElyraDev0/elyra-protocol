@@ -9,6 +9,8 @@ settlement live in five small, single-purpose contracts.
 > **Status: testnet.** These contracts are in development and deployed on testnets only (**Sepolia** and **Orbinum testnet**), with test tokens.
 > They are not audited yet and hold no real funds. Mainnet comes only after independent audits, starting with low caps.
 
+Testnet addresses: [`deployments/sepolia.json`](deployments/sepolia.json) · Guide: [`docs/TESTNET.md`](docs/TESTNET.md) · Court: [`docs/COURT.md`](docs/COURT.md)
+
 Website: [elyraprotocol.com](https://elyraprotocol.com) · X: [@ElyraProtocol_](https://x.com/ElyraProtocol_) · Telegram: [t.me/ElyraProtocol](https://t.me/ElyraProtocol)
 
 ---
@@ -35,7 +37,7 @@ Website: [elyraprotocol.com](https://elyraprotocol.com) · X: [@ElyraProtocol_](
 ### Safety by design
 
 - **Small contracts**, one job each, so they are easy to read and audit.
-- **Caps everywhere:** per job, per wallet (across jobs and credits) and per contract. The testnet uses the same shape as the planned first year of mainnet: 10 USDC per job and per wallet.
+- **Caps everywhere:** per job, per wallet (across jobs and credits) and per contract. The first year of mainnet is planned at about 10 USDC per job and per wallet; the testnet temporarily allows larger simulated jobs to exercise jury appeals.
 - **The pause can never trap funds:** refunds, releases and bond withdrawals keep working while paused.
 - **Fees are fixed when a job opens** and the protocol fee has a hard maximum in code.
 - **No admin can edit reputation** or move users' funds.
@@ -50,7 +52,7 @@ forge build
 forge test -vv
 ```
 
-The suite has 33 tests, including fuzz tests that check funds are always conserved across every dispute and release path.
+The suite has 42 tests, including fuzz tests that check funds are always conserved across every dispute, release, court ruling and micro-payment.
 Tests also run automatically on every push (GitHub Actions).
 
 ## Deploy on Sepolia
@@ -99,6 +101,10 @@ events that are impossible when the code works. It starts in `watch` mode (alert
 ```bash
 cd monitor && npm install && node monitor.mjs
 ```
+
+## Roadmap
+
+See [ROADMAP.md](ROADMAP.md) for the phases from testnet to mainnet, and [CHANGELOG.md](CHANGELOG.md) for what changed.
 
 ## Security
 
