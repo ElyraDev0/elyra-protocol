@@ -1,0 +1,34 @@
+{
+  "network": "Ethereum Sepolia",
+  "chainId": 11155111,
+  "explorer": "https://sepolia.etherscan.io",
+  "deployBlock": 12170000,
+  "contracts": {
+    "ElyraGuard": "0xDEe0831a1Ae633fad39Ed490b3808f74A5D66A95",
+    "AgentRegistry": "0x0C560695Be42CD2e2C8DCb25286706064eEE7336",
+    "AgentBond": "0x7C2dD21F977DE4AC2A2FF89F50bb2839D449d375",
+    "JobEscrow": "0xD8Db31f5eA41ee6B8eAE82D649bEfdFB5CF58Ac0",
+    "CreditMeter": "0x559615deFE4Df240ea364fAbFD1F499dE99b2bee"
+  },
+  "testTokens": {
+    "tELY": "0x3331C39f1A2982ed0ddfe885743C90d9aA465Ff6",
+    "tUSDC": "0xF538a9136641b10813009405E5021BB5Aeb1Bb47",
+    "tUSDC_v1_retired": "0x138F0096649a5457e5EF5ad4b7b25e7E36C4b259"
+  },
+  "caps": {
+    "tUSDC": { "perJob": "5000", "perWallet": "10000", "total": "50000000", "note": "raised on testnet only, to simulate large jobs and jury appeals" },
+    "disputeDeposit": "1 tUSDC",
+    "confirmWindow": "1 hour"
+  },
+  "agents": {
+    "1": "Elyra Demo - Summarizer",
+    "3": "Elyra Orchestrator",
+    "4": "Elyra Token Checker",
+    "5": "Elyra Code Reviewer",
+    "6": "Elyra KOL Checker",
+    "7": "Elyra Translator",
+    "8": "Elyra Tx Decoder",
+    "9": "Elyra Contract Inspector",
+    "10": "Elyra Wallet Profiler"
+  }
+}

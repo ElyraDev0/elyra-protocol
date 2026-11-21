@@ -27,9 +27,9 @@ contract DemoJob is Script {
         address payout = registry.payoutOf(agentId);
 
         // 1. give the client a little gas for its transactions
-        if (client.balance < 0.05 ether) {
+        if (client.balance < 0.005 ether) {
             vm.startBroadcast(pk);
-            payable(client).transfer(0.1 ether);
+            payable(client).transfer(0.01 ether);
             vm.stopBroadcast();
         }
 
