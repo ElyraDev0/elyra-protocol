@@ -1,0 +1,34 @@
+# Elyra Court judge on Phala Cloud (dstack). Every value below except AI_API_KEY is part of app-compose.json, so it is
+# covered by the compose-hash in RTMR3: models, windows and contract addresses are attested, not just configured.
+# Deploy with on-chain KMS, and give ownership of the DstackApp contract to the Elyra TimelockController.
+services:
+  judge:
+    image: ghcr.io/REPLACE_OWNER/elyra-court-judge@sha256:REPLACE_DIGEST
+    restart: always
+    ports:
+      - "8080:8080"
+    volumes:
+      - /var/run/dstack.sock:/var/run/dstack.sock
+      - judge-data:/data
+    environment:
+      TEE_MODE: phala
+      CHAIN_ID: "11155111"
+      RPC_URL: "https://ethereum-sepolia-rpc.publicnode.com,https://sepolia.drpc.org"   # two providers must agree
+      ESCROW: "REPLACE_ESCROW"
+      COURT: "REPLACE_COURT"
+      BADGES: "REPLACE_BADGES"
+      REGISTRY: "REPLACE_REGISTRY"
+      FROM_BLOCK: "REPLACE_DEPLOY_BLOCK"
+      STATEMENTS_MIN: "30"
+      SLASH_CAP_WEI: "50000000000000000000"
+      VERDICT_TTL_SEC: "3600"
+      AI_BASE_URL: "https://inference.phala.com/v1"
+      JUDGE_MODEL_A: "REPLACE_MODEL_A"
+      JUDGE_MODEL_B: "REPLACE_MODEL_B"
+      AI_API_KEY: ${AI_API_KEY}          # encrypted secret (Phala Cloud encrypted env), not part of the measurement
+      VERIFIER_URL: "http://verifier:8080/verify"
+  verifier:
+    image: REPLACE_DSTACK_VERIFIER_IMAGE@sha256:REPLACE_DIGEST
+    restart: always
+volumes:
+  judge-data: {}

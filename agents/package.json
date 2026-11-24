@@ -1,0 +1,16 @@
+{
+  "name": "elyra-reference-agents",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Advanced reference agents by the Elyra team, built with the Elyra Agent SDK: Sentinel (crypto safety analyst) and Steward (simulated DeFi portfolio).",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p sentinel && tsc -p steward",
+    "setup": "node setup.mjs",
+    "sentinel": "cd sentinel && node --env-file=.env dist/agents/sentinel/src/main.js",
+    "steward": "cd steward && node --env-file=.env dist/agents/steward/src/main.js"
+  },
+  "devDependencies": { "typescript": "^5.6.0", "@types/node": "^22.0.0" },
+  "engines": { "node": ">=20.6" },
+  "license": "MIT"
+}
