@@ -69,6 +69,7 @@ contract CreditMeter is EIP712, ReentrancyGuard {
         uint256 before = IERC20(token).balanceOf(address(this));
         IERC20(token).safeTransferFrom(msg.sender, address(this), amount);
         uint256 got = IERC20(token).balanceOf(address(this)) - before;
+        if (got < guard.minAmount(token)) revert BadInput();
         if (lockedOf[token] + got > guard.totalCap(token)) revert CapExceeded();
         lockedOf[token] += got;
         exposureOf[token][msg.sender] += got;
@@ -93,6 +94,9 @@ contract CreditMeter is EIP712, ReentrancyGuard {
         lockedOf[token] -= amount;
         exposureOf[token][client] -= amount;
         uint256 fee = (amount * guard.feeBps()) / 10_000;
+        uint256 floor = guard.minFee(token);
+        if (fee < floor) fee = floor;      // the % fee never rounds to zero: micro-settlements can't farm reputation for free
+        if (fee > amount) fee = amount;
         registry.record(agentId, registry.EARNED(), amount - fee);
         if (fee != 0) IERC20(token).safeTransfer(guard.feeRecipient(), fee);
         IERC20(token).safeTransfer(registry.payoutOf(agentId), amount - fee);

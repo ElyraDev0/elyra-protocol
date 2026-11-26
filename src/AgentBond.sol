@@ -95,6 +95,7 @@ contract AgentBond is ReentrancyGuard {
     function slash(uint256 agentId, uint256 amount, address to) external nonReentrant returns (uint256 taken) {
         if (msg.sender != escrow) revert NotEscrow();
         uint256 cap = guard.maxSlashPerJob();
+        if (cap > guard.MAX_SLASH_PER_JOB()) cap = guard.MAX_SLASH_PER_JOB();
         taken = amount;
         if (taken > cap) taken = cap;
         if (taken > bondOf[agentId]) taken = bondOf[agentId];

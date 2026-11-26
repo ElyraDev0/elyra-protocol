@@ -19,36 +19,41 @@ AI agents are starting to buy work from other agents: a research agent pays a su
 | 3. Deliver | The agent submits the result (its hash) before the deadline | `JobEscrow.deliver` |
 | 4. Settle | Delivered: the agent is paid. Not delivered: the client is refunded. Disagreement: dispute rules decide | `JobEscrow.release / refund / dispute` |
 | 5. Reputation | Every outcome is recorded and can't be edited; agents with too many bad outcomes are suspended automatically | `AgentRegistry.record` |
-| Safety | Per-job and per-wallet caps, and a guardian that can only pause | `ElyraGuard` |
+| Safety | Caps and minimums per job and wallet, timelocked settings, and a guardian that can only pause | `ElyraGuard` |
 
 ## Live on Orbinum testnet
 
 | Contract | Address |
 |---|---|
-| AgentRegistry | _to be filled after deployment_ |
-| JobEscrow | _to be filled_ |
-| AgentBond | _to be filled_ |
-| CreditMeter | _to be filled_ |
-| ElyraGuard | _to be filled_ |
-| Test USDC (tUSDC) | _to be filled_ |
+| AgentRegistry | `0xc7Cfc9d616804EAA354e41c1bb73d5A45e0EC724` |
+| JobEscrow | `0xcC6a402a4591136Fb069Cf01eb9BfEf831ce7a73` |
+| AgentBond | `0x72114FC3a78Ff26981D9b65126e257B006359E29` |
+| CreditMeter | `0xb6D212dC9c8Bf0a0934E67556C22c80D7DC44A6E` |
+| ElyraGuard | `0x410Bf7bc1fBa2918cb0D7a33BD58c6b25506Bfec` |
+| Test ELY (tELY) | `0xdebD4aeA243876aB9B79CEf0bc688Be51209a473` |
+| Test USDC (tUSDC) | `0xc1996A07435383B48740bd6C32af9322f8667541` |
+
+22 Elyra Agent Market agents (#1 to #22), each bonded with 100 tELY, plus the two reference agents Sentinel and Steward. Full list in [`deployments/orbinum.json`](../deployments/orbinum.json).
 
 Explorer: https://explorer.testnet.orbinum.network/evm
 
 ## Try it yourself
 
-Requires [Foundry](https://book.getfoundry.sh/getting-started/installation) and a **fresh testnet-only wallet** with a few ORB from https://faucet.orbinum.network.
+Requires [Foundry](https://book.getfoundry.sh/getting-started/installation) and **two fresh testnet-only wallets** with a few ORB each from https://faucet.orbinum.network.
 
 ```bash
-# 1. deploy the whole protocol + a demo agent
-PRIVATE_KEY=0x... forge script script/Deploy.s.sol --rpc-url orbinum_testnet --broadcast
+# 1. deploy the whole protocol + the 22 Elyra Agent Market agents, in one command.
+#    Two testnet-only wallets: DEPLOYER (owner, timelocked) and OPERATOR (agents + court). forge asks for both keys.
+DEPLOYER=0x... OPERATOR=0x... forge script script/Deploy.s.sol --rpc-url orbinum_testnet --broadcast --slow --interactives 2 --gas-estimate-multiplier 400
 
-# 2. run a complete job end to end: pay into escrow -> deliver -> release -> reputation
-PRIVATE_KEY=0x... ESCROW=0x... REGISTRY=0x... TUSDC=0x... AGENT_ID=1 \
-forge script script/DemoJob.s.sol --rpc-url orbinum_testnet --broadcast --slow
-
-# 3. verify the contracts on Sourcify (no API key needed)
+# 2. verify the contracts on Sourcify (no API key needed)
 forge verify-contract <address> src/JobEscrow.sol:JobEscrow --chain 2700 --verifier sourcify
 ```
+
+### Notes from the deployment
+
+- **Gas estimates:** Orbinum (Frontier EVM) charges more gas than a local simulation predicts for some storage writes. Use `--gas-estimate-multiplier 400`; the whole deployment still costs well under 0.1 ORB.
+- **Reading logs:** the public RPC accepts `eth_getLogs` over at most **1024 blocks** per call. Read history in windows of 1,000 blocks (the Elyra site batches 25 windows per request).
 
 ## What Elyra brings to the Orbinum ecosystem
 

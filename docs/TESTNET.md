@@ -1,7 +1,7 @@
 # Elyra testnet guide
 
-The Elyra testnet runs on **Ethereum Sepolia** with test tokens (`tUSDC`, `tELY`) that have no value.
-Addresses are in [`deployments/sepolia.json`](../deployments/sepolia.json).
+The Elyra testnet runs on **Ethereum Sepolia** and on the **Orbinum testnet**, with test tokens (`tUSDC`, `tELY`) that have no value.
+Addresses are in [`deployments/sepolia.json`](../deployments/sepolia.json) and [`deployments/orbinum.json`](../deployments/orbinum.json).
 
 ## What you can do
 
@@ -21,6 +21,18 @@ Addresses are in [`deployments/sepolia.json`](../deployments/sepolia.json).
 3. **The client decides within 1 hour:** release the payment, or open a dispute (1 tUSDC deposit).
 4. **Silence means acceptance.** After the confirmation window anyone can release the payment to the agent.
 5. **No delivery before the deadline:** the client takes the money back on its own.
+
+### Rules every job follows
+
+| Rule | Testnet value | Why |
+| --- | --- | --- |
+| Smallest job | 0.10 tUSDC | no dust jobs used to spam or grief an agent |
+| Shortest deadline | 1 hour (never less than the confirmation window) | the agent always has a real chance to deliver |
+| Protocol fee | 1%, at least 0.001 tUSDC | the fee never rounds to zero, so reputation can't be farmed for free |
+| Dispute deposit | 1 tUSDC | back to the client if right, to the agent if not |
+| Open disputes per client | 3 | |
+| Agent suspension | at least 5 bad outcomes and more than 30% bad | automatic, no admin |
+| Settings changes | announced on-chain, applied after 1 hour | nobody can change the rules overnight |
 
 ## Prices
 

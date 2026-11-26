@@ -34,6 +34,7 @@ contract JobEscrow is ReentrancyGuard {
         bytes32 specHash;    // hash of the task description (kept off-chain)
         bytes32 resultHash;  // hash of the delivered result (kept off-chain)
         uint256 deposit;     // dispute deposit put down by the client (same token)
+        uint256 minFee;      // smallest fee for this job, fixed when the job is opened
     }
 
     uint64 public constant MAX_JOB_DURATION = 90 days;
@@ -71,6 +72,21 @@ contract JobEscrow is ReentrancyGuard {
     error TooEarly();
     error TooLate();
     error TooManyDisputes();
+    error TooSmall();
+
+    /// @notice shortest deadline a client can set: never shorter than the confirmation window, so an agent always has
+    ///         a real chance to deliver (a 1-second deadline could otherwise force refunds and get an agent suspended)
+    function minDuration() public view returns (uint64) {
+        uint64 g = guard.minJobDuration();
+        return g > confirmWindow ? g : confirmWindow;
+    }
+
+    /// @notice protocol fee on a paid job: the % fee, never below the job's minimum fee, never above the amount
+    function feeOf(uint256 amount, uint16 feeBps, uint256 minFee) public pure returns (uint256 fee) {
+        fee = (amount * feeBps) / 10_000;
+        if (fee < minFee) fee = minFee;
+        if (fee > amount) fee = amount;
+    }
 
     constructor(AgentRegistry registry_, AgentBond bond_, ElyraGuard guard_, uint64 confirmWindow_) {
         registry = registry_;
@@ -84,11 +100,13 @@ contract JobEscrow is ReentrancyGuard {
         if (!registry.isActive(agentId)) revert BadInput();
         uint256 cap = guard.jobCap(token);
         if (cap == 0 || amount == 0 || amount > cap) revert CapExceeded();
-        if (deadline <= block.timestamp || deadline > block.timestamp + MAX_JOB_DURATION) revert BadInput();
+        if (amount < guard.minAmount(token)) revert TooSmall();
+        if (deadline < block.timestamp + minDuration() || deadline > block.timestamp + MAX_JOB_DURATION) revert BadInput();
 
         uint256 before = IERC20(token).balanceOf(address(this));
         IERC20(token).safeTransferFrom(msg.sender, address(this), amount);
         uint256 got = IERC20(token).balanceOf(address(this)) - before;
+        if (got < guard.minAmount(token)) revert TooSmall();
         if (lockedOf[token] + got > guard.totalCap(token)) revert CapExceeded();
         uint256 wcap = guard.walletCap(token);
         if (wcap != 0 && exposureOf[token][msg.sender] + got > wcap) revert CapExceeded();
@@ -98,7 +116,8 @@ contract JobEscrow is ReentrancyGuard {
         id = ++jobCount;
         jobs[id] = Job({
             agentId: agentId, client: msg.sender, token: token, amount: got, deadline: deadline, deliveredAt: 0, disputedAt: 0,
-            feeBps: guard.feeBps(), status: Status.Open, specHash: specHash, resultHash: bytes32(0), deposit: 0
+            feeBps: guard.feeBps(), status: Status.Open, specHash: specHash, resultHash: bytes32(0), deposit: 0,
+            minFee: guard.minFee(token)
         });
         openJobsOf[agentId] += 1;
         latestJobOf[msg.sender] = id;
@@ -127,7 +146,7 @@ contract JobEscrow is ReentrancyGuard {
 
     function _payAgent(uint256 id, Job storage j) internal {
         j.status = Status.Released;
-        uint256 fee = (j.amount * j.feeBps) / 10_000;
+        uint256 fee = feeOf(j.amount, j.feeBps, j.minFee);
         _close(j);
         completedAsClient[j.client] += 1;
         registry.record(j.agentId, registry.COMPLETED(), j.amount - fee);
