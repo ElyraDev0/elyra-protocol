@@ -25,7 +25,7 @@ contract MarketplaceTest is Test {
     function setUp() public {
         ely = new TestToken("tELY", "tELY", 18, 5_000 ether);
         usdc = new TestToken("tUSDC", "tUSDC", 6, 10_000e6);
-        guard = new ElyraGuard(address(this));
+        guard = new ElyraGuard(address(this), 1 hours);
         reg = new AgentRegistry(guard);
         bond = new AgentBond(IERC20(address(ely)), reg, guard, 1 hours);
         esc = new JobEscrow(reg, bond, guard, 1 hours);

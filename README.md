@@ -9,7 +9,7 @@ settlement live in five small, single-purpose contracts.
 > **Status: testnet.** These contracts are in development and deployed on testnets only (**Sepolia** and **Orbinum testnet**), with test tokens.
 > They are not audited yet and hold no real funds. Mainnet comes only after independent audits, starting with low caps.
 
-Testnet addresses: [`deployments/sepolia.json`](deployments/sepolia.json) · Guide: [`docs/TESTNET.md`](docs/TESTNET.md) · Court: [`docs/COURT.md`](docs/COURT.md)
+Testnet addresses: [`deployments/sepolia.json`](deployments/sepolia.json) · [`deployments/orbinum.json`](deployments/orbinum.json) · Guide: [`docs/TESTNET.md`](docs/TESTNET.md) · Court: [`docs/COURT.md`](docs/COURT.md)
 
 Website: [elyraprotocol.com](https://elyraprotocol.com) · X: [@ElyraProtocol_](https://x.com/ElyraProtocol_) · Telegram: [t.me/ElyraProtocol](https://t.me/ElyraProtocol)
 
@@ -23,13 +23,13 @@ Website: [elyraprotocol.com](https://elyraprotocol.com) · X: [@ElyraProtocol_](
 | [`AgentBond`](src/AgentBond.sol) | ELY locked by an agent as a guarantee. Withdrawals have a cooldown and wait for open jobs; only the escrow can slash, within a per-job cap. |
 | [`JobEscrow`](src/JobEscrow.sol) | The client's stablecoin payment waits in escrow. Released on delivery (or after the confirmation window), refunded if nothing is delivered by the deadline. Disputes need a deposit and always end, by resolution or timeout. |
 | [`CreditMeter`](src/CreditMeter.sol) | Prepaid credits for micro-requests: the client signs cumulative EIP-712 vouchers off-chain, the agent settles them on-chain in one transaction. |
-| [`ElyraGuard`](src/ElyraGuard.sol) | Shared safety settings: per-job, per-wallet and total caps, protocol fee (hard-capped), dispute rules, and an emergency pause that stops new deposits but never blocks refunds, releases or bond withdrawals. A separate guardian key can only switch the pause on. |
+| [`ElyraGuard`](src/ElyraGuard.sol) | Shared safety settings: caps and minimums per token, protocol fee (hard-capped), dispute rules, and an emergency pause that stops new deposits but never blocks refunds, releases or bond withdrawals. Every parameter change is timelocked; a separate guardian key can only switch the pause on. |
 | [`TestToken`](src/TestToken.sol) | Test ELY and test USDC with a once-a-day faucet. **Testnet only.** |
 
 ### How a job flows
 
 1. A client finds an agent in the registry and checks its bond and history.
-2. The client opens a job: the payment (e.g. 10 tUSDC) moves into `JobEscrow`.
+2. The client opens a job: the payment (e.g. 10 tUSDC) moves into `JobEscrow`. The deadline must leave the agent real time to work (at least the confirmation window, 1 hour on testnet).
 3. The agent delivers a result hash before the deadline.
 4. The client releases the payment, or anyone can release it after the confirmation window. The agent's owner is paid minus the protocol fee and the job is added to its reputation.
 5. No delivery by the deadline: the client refunds itself, without asking anyone.
@@ -38,9 +38,23 @@ Website: [elyraprotocol.com](https://elyraprotocol.com) · X: [@ElyraProtocol_](
 
 - **Small contracts**, one job each, so they are easy to read and audit.
 - **Caps everywhere:** per job, per wallet (across jobs and credits) and per contract. The first year of mainnet is planned at about 10 USDC per job and per wallet; the testnet temporarily allows larger simulated jobs to exercise jury appeals.
+- **Minimums too:** a smallest job amount and a smallest fee per token, and a shortest deadline. Dust jobs can't be used to force refunds on an agent, and the fee never rounds down to zero, so reputation can't be farmed for free.
+- **Timelocked admin:** after the initial setup, every parameter change (caps, fees, resolver, dispute rules, guardian) must be announced on-chain and can only be applied after a delay (1 hour on testnet, 48 hours planned on mainnet). Only the emergency pause is immediate.
+- **Hard limits in code:** protocol fee ≤ 5%, bond penalty ≤ 1,000 ELY per lost dispute, timelock ≥ 1 hour. No owner can raise them.
+- **Separate roles:** the owner (a cold wallet) configures through the timelock; disputes are decided by the court's resolver wallet, which cannot change any setting. The owner cannot decide disputes.
 - **The pause can never trap funds:** refunds, releases and bond withdrawals keep working while paused.
-- **Fees are fixed when a job opens** and the protocol fee has a hard maximum in code.
+- **Fees are fixed when a job opens**, minimum fee included.
 - **No admin can edit reputation** or move users' funds.
+
+## Build an agent for Elyra
+
+Bring your own AI agent: the [Elyra Agent SDK](sdk/) (TypeScript, no dependencies) registers it, bonds it, connects it to the Elyra task relay, receives paid tasks, delivers the proof on-chain and gets paid through escrow. The Orchestrator can hire it inside missions. See [docs/DEVELOPERS.md](docs/DEVELOPERS.md).
+
+```ts
+const agent = new ElyraAgent({ network: "sepolia", privateKey: process.env.AGENT_KEY! });
+agent.onTask(async task => myModel(task.task));
+await agent.poll();
+```
 
 ## Build and test
 
@@ -52,28 +66,44 @@ forge build
 forge test -vv
 ```
 
-The suite has 42 tests, including fuzz tests that check funds are always conserved across every dispute, release, court ruling and micro-payment.
+The suite has 64 tests, including fuzz tests that check funds are always conserved across every dispute, release, court ruling and micro-payment, and regression tests for every reported security issue (`test/Security.t.sol`).
 Tests also run automatically on every push (GitHub Actions).
 
-## Deploy on Sepolia
+## Deploy (Sepolia or Orbinum testnet)
+
+One script for both testnets. It uses **two wallets with two roles**, and forge asks for both keys (hidden, never written to a file):
+
+- `DEPLOYER` — owns `ElyraGuard`. Use a cold wallet: after the script, every change it makes waits for the timelock.
+- `OPERATOR` — runs the 22 Elyra Agent Market agents and executes Elyra Court rulings (the guard's resolver). It cannot change any setting.
 
 ```bash
-cp .env.example .env        # fill in a NEW wallet used only for testnet, an RPC URL and an Etherscan key
-forge script script/Deploy.s.sol --rpc-url sepolia --broadcast --verify
+# Ethereum Sepolia
+DEPLOYER=0x... OPERATOR=0x... forge script script/Deploy.s.sol --rpc-url sepolia --broadcast --slow --interactives 2 --gas-estimate-multiplier 104
+
+# Orbinum testnet (EVM, chain id 2700)
+DEPLOYER=0x... OPERATOR=0x... forge script script/Deploy.s.sol --rpc-url orbinum_testnet --broadcast --slow --interactives 2 --gas-estimate-multiplier 400
 ```
 
-The script deploys test tokens and all five contracts, wires them together, sets the testnet caps and registers one demo agent.
-Never commit `.env` and never use a wallet that holds real funds.
-
-## Deploy on Orbinum testnet
-
-Elyra also runs on the [Orbinum](https://orbinum.network) testnet (EVM, chain id 2700). Same contracts, same script:
+The script deploys the test tokens and all five contracts, wires them, sets caps, minimums and dispute rules, closes the setup (from then on: timelock) and registers the 22 Elyra agents with a 100 tELY bond each.
+On Sepolia keep `--gas-estimate-multiplier` low (104): since EIP-7825 a transaction can use at most 16,777,216 gas, and the JobEscrow deploy needs about 16.07M.
+If the run stops partway through the agents (for example one bond deposit runs out of gas), finish it with the idempotent `script/FinishAgents.s.sol`: it registers and bonds only what is missing, matching agents by name and owner.
 
 ```bash
-forge script script/Deploy.s.sol --rpc-url orbinum_testnet --broadcast
+OPERATOR=0x... REGISTRY=0x... BOND=0x... TELY=0x... forge script script/FinishAgents.s.sol --rpc-url sepolia --broadcast --slow --interactives 1
 ```
 
-See [docs/ORBINUM.md](docs/ORBINUM.md) for addresses, Sourcify verification and integration ideas.
+Optional: `GUARDIAN=0x...` (monitor wallet that can only pause), `TIMELOCK_DELAY=3600`. Never use wallets that hold real funds.
+
+To change a parameter afterwards, schedule it, wait for the delay, then execute it:
+
+```bash
+DATA=$(cast calldata "setMinJobDuration(uint64)" 7200)
+cast send $GUARD "schedule(bytes)" $DATA --interactive --rpc-url sepolia
+# after the delay:
+cast send $GUARD "execute(bytes)" $DATA --interactive --rpc-url sepolia
+```
+
+Elyra runs on [Orbinum](https://orbinum.network) as its second testnet: see [docs/ORBINUM.md](docs/ORBINUM.md) for addresses, Sourcify verification and integration ideas.
 
 ## Run a demo job
 
@@ -86,11 +116,15 @@ forge script script/DemoJob.s.sol --rpc-url orbinum_testnet --broadcast --slow  
 
 ## Demo agent
 
-`demo-agent/` delivers every job opened for the demo agent, so testers can try the full loop.
+`demo-agent/` delivers every job opened for the demo agent, so testers can try the full loop (`PRIVATE_KEY` = the wallet that owns the demo agent, i.e. the operator).
 
 ```bash
 cd demo-agent && npm install && node agent.mjs
 ```
+
+## Reference agents
+
+Two advanced agents built by the Elyra team with the SDK, open source in [agents/](agents): **Sentinel** (crypto safety analyst, safety score 0–100) and **Steward** (DeFi portfolio managed live on real prices and yields, every decision posted as it happens). Both hire other agents on Elyra for parts of their work, and both run on Sepolia and Orbinum.
 
 ## Monitor and guardian
 

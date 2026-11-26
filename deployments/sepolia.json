@@ -2,33 +2,53 @@
   "network": "Ethereum Sepolia",
   "chainId": 11155111,
   "explorer": "https://sepolia.etherscan.io",
-  "deployBlock": 12170000,
+  "deployBlock": 12205457,
   "contracts": {
-    "ElyraGuard": "0xDEe0831a1Ae633fad39Ed490b3808f74A5D66A95",
-    "AgentRegistry": "0x0C560695Be42CD2e2C8DCb25286706064eEE7336",
-    "AgentBond": "0x7C2dD21F977DE4AC2A2FF89F50bb2839D449d375",
-    "JobEscrow": "0xD8Db31f5eA41ee6B8eAE82D649bEfdFB5CF58Ac0",
-    "CreditMeter": "0x559615deFE4Df240ea364fAbFD1F499dE99b2bee"
+    "ElyraGuard": "0x410Bf7bc1fBa2918cb0D7a33BD58c6b25506Bfec",
+    "AgentRegistry": "0xc7Cfc9d616804EAA354e41c1bb73d5A45e0EC724",
+    "AgentBond": "0x72114FC3a78Ff26981D9b65126e257B006359E29",
+    "JobEscrow": "0xcC6a402a4591136Fb069Cf01eb9BfEf831ce7a73",
+    "CreditMeter": "0xb6D212dC9c8Bf0a0934E67556C22c80D7DC44A6E"
   },
   "testTokens": {
-    "tELY": "0x3331C39f1A2982ed0ddfe885743C90d9aA465Ff6",
-    "tUSDC": "0xF538a9136641b10813009405E5021BB5Aeb1Bb47",
-    "tUSDC_v1_retired": "0x138F0096649a5457e5EF5ad4b7b25e7E36C4b259"
+    "tELY": "0xdebD4aeA243876aB9B79CEf0bc688Be51209a473",
+    "tUSDC": "0xc1996A07435383B48740bd6C32af9322f8667541"
   },
   "caps": {
-    "tUSDC": { "perJob": "5000", "perWallet": "10000", "total": "50000000", "note": "raised on testnet only, to simulate large jobs and jury appeals" },
+    "tUSDC": {
+      "perJob": "5000",
+      "perWallet": "10000",
+      "total": "50000000",
+      "note": "raised on testnet only, to simulate large jobs and jury appeals"
+    },
     "disputeDeposit": "1 tUSDC",
     "confirmWindow": "1 hour"
   },
   "agents": {
     "1": "Elyra Demo - Summarizer",
-    "3": "Elyra Orchestrator",
-    "4": "Elyra Token Checker",
-    "5": "Elyra Code Reviewer",
-    "6": "Elyra KOL Checker",
-    "7": "Elyra Translator",
-    "8": "Elyra Tx Decoder",
-    "9": "Elyra Contract Inspector",
-    "10": "Elyra Wallet Profiler"
-  }
+    "2": "Elyra Orchestrator",
+    "3": "Elyra Token Checker",
+    "4": "Elyra Code Reviewer",
+    "5": "Elyra KOL Checker",
+    "6": "Elyra Translator",
+    "7": "Elyra Tx Decoder",
+    "8": "Elyra Contract Inspector",
+    "9": "Elyra Wallet Profiler",
+    "10": "Elyra Approval Auditor",
+    "11": "Elyra Multisig Inspector",
+    "12": "Elyra NFT Checker",
+    "13": "Elyra Name Resolver",
+    "14": "Elyra Gas Advisor",
+    "15": "Elyra Tokenomics Analyst",
+    "16": "Elyra Governance Brief",
+    "17": "Elyra Audit Reader",
+    "18": "Elyra Test Writer",
+    "19": "Elyra Gas Optimizer",
+    "20": "Elyra FAQ Builder",
+    "21": "Elyra Announcer",
+    "22": "Elyra Verifier"
+  },
+  "deployed": "2026-11-25 (v3: security hardening, timelocked ElyraGuard)",
+  "deployer": "0x1000D2E32340b52082c703C9fCe79bdBaF9A7765",
+  "operator": "0x16a35f16b2ac7af0339d842c440a63ee0abae7b7"
 }

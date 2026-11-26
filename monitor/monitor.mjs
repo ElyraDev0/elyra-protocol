@@ -80,7 +80,9 @@ const EV = {
   paused: parseAbiItem("event Paused(bool paused)"),
   owner: parseAbiItem("event OwnershipTransferred(address indexed from, address indexed to)"),
   params: parseAbiItem("event Params(address resolver, address feeRecipient, uint16 feeBps, uint256 minBond, uint256 maxBondPerAgent, uint256 maxSlashPerJob)"),
-  caps: parseAbiItem("event TokenCaps(address indexed token, uint256 jobCap, uint256 totalCap)"),
+  caps: parseAbiItem("event TokenCaps(address indexed token, uint256 jobCap, uint256 totalCap, uint256 walletCap)"),
+  scheduled: parseAbiItem("event ChangeScheduled(bytes32 indexed id, bytes data, uint64 executableAt)"),
+  executed: parseAbiItem("event ChangeExecuted(bytes32 indexed id)"),
   disputed: parseAbiItem("event JobDisputed(uint256 indexed id)"),
   opened: parseAbiItem("event JobOpened(uint256 indexed id, uint256 indexed agentId, address indexed client, address token, uint256 amount, uint64 deadline)"),
   released: parseAbiItem("event JobReleased(uint256 indexed id, uint256 toAgent, uint256 fee)"),
@@ -112,10 +114,11 @@ async function tick() {
   const head = await pub.getBlockNumber();
   if (head >= from) {
     // events since last tick
-    const [b, w, sl, pa, ow, pr, cp, di, op, rel] = await Promise.all([
+    const [b, w, sl, pa, ow, pr, cp, di, op, rel, sc, ex] = await Promise.all([
       logs(EV.bonded, A.bond, from, head), logs(EV.withdrawn, A.bond, from, head), logs(EV.slashed, A.bond, from, head),
       logs(EV.paused, A.guard, from, head), logs(EV.owner, A.guard, from, head), logs(EV.params, A.guard, from, head), logs(EV.caps, A.guard, from, head),
       logs(EV.disputed, A.escrow, from, head), logs(EV.opened, A.escrow, from, head), logs(EV.released, A.escrow, from, head),
+      logs(EV.scheduled, A.guard, from, head), logs(EV.executed, A.guard, from, head),
     ]);
     if (!history) for (const l of rel) releasedThisTick.push({ id: l.args.id, amount: l.args.toAgent + l.args.fee });
     const now = Date.now();
@@ -129,6 +132,9 @@ async function tick() {
     for (const l of sl) { bondSum -= l.args.amount; if (!history) await tg(`🟡 Bond penalty: agent #${l.args.agentId} lost ${formatUnits(l.args.amount, 18)} tELY\n${scan(l.transactionHash)}`); }
     for (const l of pa) if (!history) await tg(`🟡 Protocol ${l.args.paused ? "PAUSED" : "un-paused"}\n${scan(l.transactionHash)}`);
     for (const l of ow) if (!history) await tg(`🟡 Guard ownership changed → ${l.args.to}\n${scan(l.transactionHash)}`);
+    // timelock: every parameter change is announced first. An announcement you did not make = the owner key is compromised.
+    for (const l of sc) if (!history) await tg(`🟠 Parameter change ANNOUNCED (timelock), executable from ${new Date(Number(l.args.executableAt) * 1000).toISOString()}\nIf you did not schedule it: cancel it from the project wallet (cancel(${l.args.id})) and pause.\n${scan(l.transactionHash)}`);
+    for (const l of ex) if (!history) await tg(`🟡 Timelocked change executed\n${scan(l.transactionHash)}`);
     for (const l of [...pr, ...cp]) if (!history) await tg(`🟡 Guard parameters changed\n${scan(l.transactionHash)}`);
     for (const l of di) disputesToday++;   // disputes close by themselves (concede / withdraw / 30-day timeout): no alert each time
     if (!history) jobsToday += op.length;

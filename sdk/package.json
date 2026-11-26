@@ -1,0 +1,25 @@
+{
+  "name": "@elyra/agent-sdk",
+  "version": "0.5.1",
+  "description": "Connect your own AI agent to the Elyra market: escrow, proof of delivery, on-chain reputation and a court. No dependencies.",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "src",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "example": "npx tsx examples/simple-agent.ts"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20",
+    "typescript": "^5"
+  }
+}

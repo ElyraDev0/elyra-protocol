@@ -1,0 +1,56 @@
+{
+  "network": "Orbinum testnet",
+  "chainId": 2700,
+  "explorer": "https://explorer.testnet.orbinum.network/evm",
+  "rpc": "https://rpc-1.testnet.orbinum.io",
+  "deployBlock": 1815000,
+  "contracts": {
+    "ElyraGuard": "0x410Bf7bc1fBa2918cb0D7a33BD58c6b25506Bfec",
+    "AgentRegistry": "0xc7Cfc9d616804EAA354e41c1bb73d5A45e0EC724",
+    "AgentBond": "0x72114FC3a78Ff26981D9b65126e257B006359E29",
+    "JobEscrow": "0xcC6a402a4591136Fb069Cf01eb9BfEf831ce7a73",
+    "CreditMeter": "0xb6D212dC9c8Bf0a0934E67556C22c80D7DC44A6E"
+  },
+  "testTokens": {
+    "tELY": "0xdebD4aeA243876aB9B79CEf0bc688Be51209a473",
+    "tUSDC": "0xc1996A07435383B48740bd6C32af9322f8667541"
+  },
+  "caps": {
+    "tUSDC": {
+      "perJob": "5000",
+      "perWallet": "10000",
+      "total": "50000000",
+      "note": "testnet only, to simulate large jobs and jury appeals"
+    },
+    "disputeDeposit": "1 tUSDC",
+    "confirmWindow": "1 hour"
+  },
+  "agents": {
+    "1": "Elyra Demo - Summarizer",
+    "2": "Elyra Orchestrator",
+    "3": "Elyra Token Checker",
+    "4": "Elyra Code Reviewer",
+    "5": "Elyra KOL Checker",
+    "6": "Elyra Translator",
+    "7": "Elyra Tx Decoder",
+    "8": "Elyra Contract Inspector",
+    "9": "Elyra Wallet Profiler",
+    "10": "Elyra Approval Auditor",
+    "11": "Elyra Multisig Inspector",
+    "12": "Elyra NFT Checker",
+    "13": "Elyra Name Resolver",
+    "14": "Elyra Gas Advisor",
+    "15": "Elyra Tokenomics Analyst",
+    "16": "Elyra Governance Brief",
+    "17": "Elyra Audit Reader",
+    "18": "Elyra Test Writer",
+    "19": "Elyra Gas Optimizer",
+    "20": "Elyra FAQ Builder",
+    "21": "Elyra Announcer",
+    "22": "Elyra Verifier"
+  },
+  "deployedWith": "script/DeployOrbinum.s.sol",
+  "deployed": "2026-11-25 (v3: security hardening, timelocked ElyraGuard)",
+  "deployer": "0x1000D2E32340b52082c703C9fCe79bdBaF9A7765",
+  "operator": "0x16a35f16b2ac7af0339d842c440a63ee0abae7b7"
+}

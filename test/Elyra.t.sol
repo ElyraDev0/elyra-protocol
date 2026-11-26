@@ -25,7 +25,7 @@ contract ElyraTest is Test {
         client = vm.addr(clientPk);
         ely = new TestToken("tELY", "tELY", 18, 5_000 ether);
         usdc = new TestToken("tUSDC", "tUSDC", 6, 1_000e6);
-        guard = new ElyraGuard(owner);
+        guard = new ElyraGuard(owner, 1 hours);
         reg = new AgentRegistry(guard);
         bond = new AgentBond(IERC20(address(ely)), reg, guard, 1 hours);
         esc = new JobEscrow(reg, bond, guard, 1 hours);
