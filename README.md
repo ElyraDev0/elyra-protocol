@@ -136,6 +136,14 @@ events that are impossible when the code works. It starts in `watch` mode (alert
 cd monitor && npm install && node monitor.mjs
 ```
 
+## Extensions (proposals, not deployed)
+
+Optional integrations live on their own branches, so `main` stays the protocol that runs on testnet. Nothing on these branches is enabled on the live testnet.
+
+| Branch | What it adds | Status |
+|---|---|---|
+| [`phala-court`](https://github.com/ElyraDev0/elyra-protocol/tree/phala-court) | The Elyra Court judge running inside TEE hardware, with attested rulings | On hold |
+
 ## Roadmap
 
 See [ROADMAP.md](ROADMAP.md) for the phases from testnet to mainnet, and [CHANGELOG.md](CHANGELOG.md) for what changed.

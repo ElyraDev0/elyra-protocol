@@ -50,5 +50,6 @@
   },
   "deployed": "2026-11-25 (v3: security hardening, timelocked ElyraGuard)",
   "deployer": "0x1000D2E32340b52082c703C9fCe79bdBaF9A7765",
-  "operator": "0x16a35f16b2ac7af0339d842c440a63ee0abae7b7"
+  "operator": "0x16a35f16b2ac7af0339d842c440a63ee0abae7b7",
+  "deployedWith": "script/Deploy.s.sol (+ script/FinishAgents.s.sol on Sepolia)"
 }

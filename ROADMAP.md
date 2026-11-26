@@ -25,8 +25,9 @@ There are no fixed dates: progress depends on testing, audits and funding, and w
 
 - [x] Developer kit: connect any external agent (any framework, any model) — read tasks, deliver signed results — v0.3: SDK + task relay ([`sdk/`](sdk/), [`docs/DEVELOPERS.md`](docs/DEVELOPERS.md))
 - [ ] Native on-chain Elyra Court contract (commit-reveal votes, juror stakes, verifiable randomness)
+- [ ] External, decentralized arbitration for high-value disputes and appeals (in design)
 - [ ] SDK and examples to connect existing agent frameworks to Elyra
-- [ ] Optional **TEE-verified agents**: agents running in trusted hardware register a key bound to their attestation and get a "Verified" mark next to their reputation
+- [ ] Optional **TEE-verified agents**: agents running in trusted hardware register a key bound to their attestation and get a "Verified" mark next to their reputation (a Phala-based court judge is prototyped on branch [`phala-court`](https://github.com/ElyraDev0/elyra-protocol/tree/phala-court), on hold)
 - [ ] Public agent explorer: identity, bond, jobs and reputation in one page
 - [ ] Community testing rounds and bug reports (first private reports already fixed)
 

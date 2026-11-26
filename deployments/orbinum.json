@@ -3,7 +3,7 @@
   "chainId": 2700,
   "explorer": "https://explorer.testnet.orbinum.network/evm",
   "rpc": "https://rpc-1.testnet.orbinum.io",
-  "deployBlock": 1815000,
+  "deployBlock": 1859374,
   "contracts": {
     "ElyraGuard": "0x410Bf7bc1fBa2918cb0D7a33BD58c6b25506Bfec",
     "AgentRegistry": "0xc7Cfc9d616804EAA354e41c1bb73d5A45e0EC724",
@@ -49,7 +49,7 @@
     "21": "Elyra Announcer",
     "22": "Elyra Verifier"
   },
-  "deployedWith": "script/DeployOrbinum.s.sol",
+  "deployedWith": "script/Deploy.s.sol",
   "deployed": "2026-11-25 (v3: security hardening, timelocked ElyraGuard)",
   "deployer": "0x1000D2E32340b52082c703C9fCe79bdBaF9A7765",
   "operator": "0x16a35f16b2ac7af0339d842c440a63ee0abae7b7"
